@@ -1,37 +1,22 @@
 'use strict';
-/**
- * Module dependencies.
- */
+
+
  
 var pmx = require('pmx').init();
- 
-var init = require('./config/init')(),
-	config = require('./config/config'),
-	mongoose = require('mongoose');
 
-/**
- * Main application entry file.
- * Please note that the order of loading is important.
- */
+require.extensions['.server.controller.js'] = require.extensions['.js'];
+require.extensions['.server.model.js'] = require.extensions['.js'];
+require.extensions['.server.routes.js'] = require.extensions['.js'];
 
-// Bootstrap db connection
-var db = mongoose.connect(config.db, function(err) {
-	if (err) {
-		console.error('\x1b[31m', 'Could not connect to MongoDB!');
-		console.log(err);
-	}
-});
 
 // Init the express application
-var app = require('./config/express')(db);
-
-
-
+var app = require('./config/express')();
+ 	
 // Start the app by listening on <port>
-app.listen(config.port);
+app.listen(3013);
 
 // Expose app
 exports = module.exports = app;
 
 // Logging initialization
-console.log('cdn.the-ybox started on port ' + config.port);
+console.log('cdn.insideoffers started on port 3013');

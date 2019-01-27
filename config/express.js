@@ -4,32 +4,20 @@
  * Module dependencies.
  */
 var express = require('express'),
-	morgan = require('morgan'),
 	bodyParser = require('body-parser'),
 	session = require('express-session'),
 	compress = require('compression'),
+	multer = require('multer'),
 	methodOverride = require('method-override'),
-	cookieParser = require('cookie-parser'),
-	helmet = require('helmet'),
-	passport = require('passport'),
-	mongoStore = require('connect-mongo')({
-		session: session
-	}),
-	flash = require('connect-flash'),
+	//cookieParser = require('cookie-parser'),
 	config = require('./config'),
 	consolidate = require('consolidate'),
 	path = require('path'),
-    cachingMiddleware = require('express-view-cache'),
-    memjs = require('memjs'),
-    pmx = require('pmx'),
-    interceptor = require('express-interceptor');
+    pmx = require('pmx');
 
-	var multer = require('multer');
+module.exports = function() {
 
-  	var cors = require('express-cors');
 
-module.exports = function(db) {
-	
 	// Initialize express app
 	var app = express();
 
@@ -40,31 +28,10 @@ module.exports = function(db) {
 	});
 
 	// Setting application local variables
-	app.locals.title = config.app.title;
-	app.locals.description = config.app.description;
-	app.locals.keywords = config.app.keywords;
+	app.locals.title = 'cdn-insideoffers';
+	app.locals.description = 'cdb';
+	app.locals.keywords = 'cdn';
 
-
-	/*
-	 *  -------------------------------------------------------------------------------------------
-	 * CORS on ExpressJS
-	 */
-	app.use(function(req, res, next) {
-		res.header('x-origin', '*');
-		res.header('Access-Control-Allow-Origin', '*');
-		res.header('Access-Control-Allow-Headers', '*');
-		res.header('Access-Control-Allow-Headers', 'Authorization');
-		next();
-	});
-
-
-	app.use(cors({
-	    allowedOrigins: [
-			'yhall.the-ybox.tech:80', 
-			'localhost:3012', 'localhost:3009', 'localhost:80'
-	    ],
-		headers : ['Authorization', 'Content-Type', 'X-Requested-With', 'x-language-origin']
-	}));
 
 	// Passing the request url to environment locals
 	app.use(function(req, res, next) {
@@ -73,14 +40,11 @@ module.exports = function(db) {
 	});
 
 
-
-
-
 	// Showing stack errors
 	app.set('showStackError', true);
 
 	// Set swig as the template engine
-	app.engine('server.view.html', consolidate[config.templateEngine]);
+	app.engine('server.view.html', consolidate['swig']);
 
 	// Set views path and view engine
 	app.set('view engine', 'server.view.html');
@@ -89,15 +53,6 @@ module.exports = function(db) {
 	// Environment dependent middleware
 	app.locals.cache = 'memory';
 
-	/*if (process.env.NODE_ENV === 'development') {
-		// Enable logger (morgan)
-		app.use(morgan('dev'));
-
-		// Disable views cache
-		app.set('view cache', false);
-	} else if (process.env.NODE_ENV === 'production') {
-		app.locals.cache = 'memory';
-	}*/
 
 	// Request body parsing middleware should be above methodOverride
 	app.use(bodyParser.urlencoded({
@@ -110,57 +65,15 @@ module.exports = function(db) {
 	app.enable('jsonp callback');
 
 	// CookieParser should be above session
-	app.use(cookieParser());
-
-	// Express MongoDB session storage
-	app.use(session({
-		saveUninitialized: true,
-		resave: true,
-		secret: config.sessionSecret,
-		store: new mongoStore({
-			db: db.connection.db,
-			collection: config.sessionCollection
-		})
-	}));
-
-	/*// use passport session
-	app.use(passport.initialize());
-	app.use(passport.session());
-
-	// connect flash for flash messages
-	app.use(flash());
-
-	// Use helmet to secure Express headers
-	app.use(helmet.xframe());
-	app.use(helmet.xssFilter());
-	app.use(helmet.nosniff());
-	app.use(helmet.ienoopen());
-	app.disable('x-powered-by');*/
-
-
-
-
-
-	/*
-	*  -------------------------------------------------------------------------------------------
-	* Configurações de Cache
-	*/
-
-	var fiveMinutes = 300000;
-	var twentyMunites = 1200000;
+	//app.use(cookieParser());
 
 	// New call to compress content
-	app.use(compress());
-
-	//app.use('/products', cachingMiddleware(twentyMunites, {'type':'application/json', 'driver':'memjs'}));
-
+	//app.use(compress());
 
 	// Setting the app router and static folder
-	app.use(express.static(path.resolve('./public'), {maxAge: fiveMinutes}));
+	app.use(express.static(path.resolve('./public'), {maxAge: 300000}));
 
 	// -------------------------------------------------------------------------------------------
-
-
 
 	// Globbing routing files
 	config.getGlobbedFiles('./app/routes/**/*.js').forEach(function(routePath) {
@@ -190,12 +103,10 @@ module.exports = function(db) {
 		});
 	});
 
-
+ 	
 	app.use(pmx.expressErrorHandler());
 
-
-
-
+	
 
 	return app;
 };

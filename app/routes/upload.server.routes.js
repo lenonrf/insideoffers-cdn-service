@@ -26,11 +26,7 @@ module.exports = function(app) {
 
     app.post('/upload', function(req, res) {
 
-
-
-
         upload(req,res,function(err){
-
 
             if(err){
                  res.json({error_code:1,err_desc:err});
@@ -41,10 +37,7 @@ module.exports = function(app) {
     });
 
 
-
-
     app.get('/test', function(req, res) {
-
  		res.json({test:true});
     });
 

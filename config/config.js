@@ -6,14 +6,6 @@
 var _ = require('lodash'),
 	glob = require('glob');
 
-/**
- * Load app configurations
- */
-module.exports = _.extend(
-	require('./env/all'),
-	require('./env/' + process.env.NODE_ENV) || {}
-);
-
 
 /**
  * Get files by glob patterns
@@ -44,19 +36,16 @@ module.exports.getGlobbedFiles = function(globPatterns, removeRoot) {
 			output.push(globPatterns);
 		
 		} else {
-			
-			glob(globPatterns, {
-				sync: true
-			}, function(err, files) {
-				
-				if (removeRoot) {
-					files = files.map(function(file) {
-						return file.replace(removeRoot, '');
-					});
-				}
+		
+			var files = glob(globPatterns, {sync: true});
 
-				output = _.union(output, files);
-			});
+                        if (removeRoot) {
+                                files = files.map(function(file) {
+                                        return file.replace(removeRoot, '');
+                                });
+                        }
+
+                        output = _.union(output, files);	
 		}
 	}
 
